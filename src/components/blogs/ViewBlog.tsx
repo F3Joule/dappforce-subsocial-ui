@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { DfMd } from '../utils/DfMd';
-import { withCalls, withMulti } from '@polkadot/react-api';
+import { withMulti } from '@polkadot/react-api';
 import { Option, GenericAccountId as AccountId } from '@polkadot/types';
 import IdentityIcon from '@polkadot/react-components/IdentityIcon';
 import Error from 'next/error'
 import { ipfs } from '../utils/OffchainUtils';
 import { HeadMeta } from '../utils/HeadMeta';
-import { nonEmptyStr, queryBlogsToProp, ZERO } from '../utils/index';
+import { nonEmptyStr, ZERO } from '../utils/index';
 import { ViewPostPage, PostDataListItem, loadPostDataList } from '../posts/ViewPost';
 import { BlogFollowersModal } from '../profiles/AccountsListModal';
 // import { BlogHistoryModal } from '../utils/ListsEditHistory';
@@ -344,20 +344,23 @@ export default ViewBlogPage;
 
 const withUnwrap = (Component: React.ComponentType<Props>) => {
   return (props: Props) => {
-    const { blogById } = props;
-    if (!blogById) return <Loading/>;
+    const { id } = props;
+    const [ blogData, setBlogData ] = useState<BlogData>()
 
-    const blog = blogById.unwrap();
+    useEffect(() => {
+      const loadData = async () => {
+        const api = await getApi()
+        const blogData = await loadBlogData(api, id as BlogId)
+        blogData && setBlogData(blogData)
+      }
+      loadData()
+    }, [ false ])
 
-    return <Component blogData={{ blog: blog }} {...props}/>;
+    return blogData?.blog ? <Component blogData={blogData} {...props}/> : <Loading />;
   };
 };
 
 export const ViewBlog = withMulti(
   ViewBlogPage,
-  withCalls<Props>(
-    queryBlogsToProp('blogById', 'id'),
-    queryBlogsToProp('postIdsByBlogId', { paramName: 'id', propName: 'postIds' })
-  ),
   withUnwrap
 );

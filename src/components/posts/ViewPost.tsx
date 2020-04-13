@@ -356,6 +356,7 @@ ViewPostPage.getInitialProps = async (props): Promise<any> => {
     return { statusCode: 404 }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const blogIdFromPost = post!.blog_id
 
   // If blog id of this post is not equal to blog id/handle from URL,
